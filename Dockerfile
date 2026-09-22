@@ -1,9 +1,9 @@
-FROM vllm/vllm-openai:qwen38-flash-next
-# FROM vllm/vllm-openai:v0.28.0-ubuntu2404
+# FROM vllm/vllm-openai:qwen38-flash-next
+FROM vllm/vllm-openai:v0.28.0-ubuntu2404
 
-COPY tq-quant /tmp/tq-quant
+COPY inference /tmp/inference
 
-RUN cd /tmp/tq-quant && \
+RUN cd /tmp/inference && \
     pip install --no-cache-dir --no-deps .
 
 RUN apt-get update && \
