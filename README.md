@@ -87,6 +87,44 @@ Calibration-free quantization is particularly useful when:
 
 ---
 
+# Quantization Quality
+
+Calibration-free quantization is only useful if the resulting model preserves the behavior of the original model.
+
+We evaluate TQ against the unquantized model by comparing output distributions and top-token predictions.
+
+The following results compare **TQ 4-bit** with **UD-Q4_K_XL** at a similar model footprint:
+
+| Quantization | Model Size\* |  Mean KLD ↓ | Top-1 Agreement ↑ |
+| ------------ | -----------: | ----------: | ----------------: |
+| **TQ 4-bit** | **17.76 GB** | **0.02824** |       **92.419%** |
+| UD-Q4_K_XL   |     17.59 GB |     0.00772 |           95.779% |
+
+\* Model size excluding MTP weights.
+
+**Mean Kullback–Leibler divergence (KLD)** measures how closely the quantized model's output probability distribution matches the reference model. Lower is better.
+
+**Top-1 Agreement** measures how often the quantized model and reference model select the same highest-probability token. Higher is better.
+
+These results are particularly useful in the context of TQ's design constraints: **TQ achieves its 4-bit representation without calibration data or calibration forward passes.**
+
+> TQ trades the calibration stage for a fully weight-driven, coding-theoretic quantization process while maintaining strong agreement with the reference model.
+
+### Reproducing the Comparison
+
+For meaningful comparisons, quantization methods should be evaluated using the same:
+
+- base model;
+- reference precision;
+- evaluation prompts/tokens;
+- tokenizer;
+- inference settings; and
+- metric implementation.
+
+Benchmark results should therefore be interpreted within the specific evaluation configuration used to produce them.
+
+---
+
 # Quantization Through Information Theory
 
 TQ approaches model quantization as a **lossy source-coding problem**.
@@ -527,17 +565,6 @@ Or equivalently:
 > Given an acceptable level of distortion, how few bits can we use?
 
 This is exactly the type of problem studied by **rate–distortion theory**.
-
-```text
-          Lower Distortion
-                ▲
-                │
-                │
-                │
-                │
-                └──────────────────► Lower Rate
-                     Compression
-```
 
 TQ brings this information-theoretic perspective to LLM weight quantization.
 
