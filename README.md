@@ -216,83 +216,62 @@ TQ approaches quantization from an **information-theoretic, lossy source-coding 
 
 ---
 
-# Quantization Quality
+# Quantization Quality — Qwen3.8 27B
 
-Removing calibration is useful only if the resulting model still preserves the behavior of the original model.
+The benchmark below is specifically for **Qwen3.8 27B**.
 
-We evaluate TQ against the unquantized reference model by comparing output probability distributions and top-token predictions.
+It should not be interpreted as a claim that the same fidelity characteristics or relative performance apply to every model architecture or model size.
 
-The following comparison places **TQ 4-bit** alongside **Unsloth UD-Q4_K_XL** at a nearly identical model footprint:
+For this evaluation, we compare the **Qwen3.8 27B TQ 4-bit model** against **Unsloth UD-Q4_K_XL** at a nearly identical model footprint.
 
-| Quantization       | Model Size\* |  Mean KLD ↓ | Top-1 Agreement ↑ |
-| ------------------ | -----------: | ----------: | ----------------: |
-| **TQ 4-bit**       | **17.76 GB** | **0.02824** |       **92.419%** |
-| Unsloth UD-Q4_K_XL |     17.59 GB |     0.00772 |           95.779% |
+Both quantized models are evaluated against the unquantized Qwen3.8 27B reference model by comparing output probability distributions and top-token predictions.
+
+| Qwen3.8 27B Quantization | Model Size\* |  Mean KLD ↓ | Top-1 Agreement ↑ |
+| ------------------------ | -----------: | ----------: | ----------------: |
+| **TQ 4-bit**             | **17.76 GB** | **0.02824** |       **92.419%** |
+| Unsloth UD-Q4_K_XL       |     17.59 GB |     0.00772 |           95.779% |
 
 \* Model size excluding MTP weights.
 
 ### Metrics
 
-**Mean Kullback–Leibler Divergence (KLD)** measures how closely the quantized model's output probability distribution matches the reference model.
+**Mean Kullback–Leibler Divergence (KLD)** measures how closely the quantized Qwen3.8 27B model's output probability distribution matches the unquantized reference model.
 
 **Lower is better.**
 
-**Top-1 Agreement** measures how often the quantized model and reference model select the same highest-probability token.
+**Top-1 Agreement** measures how often the quantized model and unquantized reference model select the same highest-probability token.
 
 **Higher is better.**
 
 ---
 
-## The Tradeoff: Fidelity vs. Calibration
+## Qwen3.8 27B: The Tradeoff
 
-The results show the tradeoff clearly.
+On **Qwen3.8 27B**, the results show the tradeoff clearly.
 
-At a nearly identical model size, **Unsloth UD-Q4_K_XL preserves the reference model more closely in this evaluation**.
+At a nearly identical model size, **Unsloth UD-Q4_K_XL preserves the behavior of the unquantized Qwen3.8 27B reference more closely in this evaluation**.
 
-TQ shows:
+Compared with Unsloth UD-Q4_K_XL, the TQ version shows:
 
-- higher KLD;
-- approximately **3.36 percentage points lower Top-1 Agreement**; and
-- a similarly sized 4-bit model.
+- higher mean KLD (`0.02824` vs. `0.00772`);
+- approximately **3.36 percentage points lower Top-1 Agreement** (`92.419%` vs. `95.779%`); and
+- a nearly identical model footprint (`17.76 GB` vs. `17.59 GB`).
 
-But TQ is optimizing for an additional constraint:
+TQ, however, is designed around an additional constraint:
 
 > **Zero calibration data and zero calibration forward passes.**
 
-TQ quantizes directly from model weights.
+TQ quantizes Qwen3.8 27B directly from the model weights.
 
-That means there is no calibration corpus to select, download, preprocess, version, or maintain as part of the quantization process.
+There is no calibration corpus to select, download, preprocess, version, or maintain as part of the TQ quantization process.
 
-The tradeoff can be summarized as:
+In this **Qwen3.8 27B evaluation**, that calibration-free constraint comes with a modest reduction in output fidelity compared with Unsloth UD-Q4_K_XL.
 
-```text
-                    TQ 4-bit
-                       │
-          ┌────────────┴────────────┐
-          │                         │
-          ▼                         ▼
-   Strong Fidelity          Calibration-Free
-                                  │
-                                  ▼
-                         0 calibration samples
-                         0 calibration passes
-```
-
-In this evaluation, that calibration-free constraint comes with a **modest reduction in output fidelity compared with Unsloth UD-Q4_K_XL**.
-
-That tradeoff is intentional.
-
-TQ is not designed around maximizing an individual fidelity metric at any operational cost.
-
-It is designed around a broader objective:
+That is the engineering tradeoff TQ is designed to explore:
 
 > **Preserve strong model fidelity at 4-bit while making quantization calibration-free, reproducible, and suitable for automated model-processing infrastructure.**
 
-For a single model with a known deployment workload, additional optimization steps may be a reasonable tradeoff.
-
-For infrastructure that needs to process many models automatically — potentially before their eventual workloads are known — removing the calibration dependency becomes increasingly valuable.
-
-That is the problem **Quant Factory** is designed to solve.
+These results should be interpreted as a benchmark for **Qwen3.8 27B**, not as a universal ranking between TQ and Unsloth UD across all models.
 
 ---
 
